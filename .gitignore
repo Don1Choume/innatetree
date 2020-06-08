@@ -87,3 +87,6 @@ target/
 
 # Mypy cache
 .mypy_cache/
+
+# exclude original matlab code
+/references/original

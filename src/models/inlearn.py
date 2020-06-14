@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.sparse import isspmatrix, csc_matrix
 from sklearn.base import BaseEstimator
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 
 # "Robust Timing and Motor Patterns by Taming Chaos in Recurrent Neural Networks"
 # Rodrigo Laje & Dean V. Buonomano 2013
@@ -31,31 +32,7 @@ class InnateLearn(BaseEstimator):
         np.random.seed(seed=self.random_state)
         self.scale = self.g/np.sqrt(self.p_connect*self.num_units)
 
-        copy_X = self.copy_X
-        check_y_params = dict(copy=False, dtype=[np.float64, np.float32],
-                              ensure_2d=False)
-        if isinstance(X, np.ndarray) or isspmatrix(X):
-            reference_to_old_X = X
-            check_X_params = dict(accept_sparse='csc',
-                                  dtype=[np.float64, np.float32], copy=False)
-            X, y = self._validate_data(X, y,
-                                       validate_separately=(check_X_params,
-                                                            check_y_params))
-            if isspmatrix(X):
-                if (hasattr(reference_to_old_X, "data") and
-                   not np.may_share_memory(reference_to_old_X.data, X.data)):
-                    copy_X = False
-            elif not np.may_share_memory(reference_to_old_X, X):
-                copy_X = False
-            del reference_to_old_X
-        else:
-            check_X_params = dict(accept_sparse='csc',
-                                  dtype=[np.float64, np.float32], order='F',
-                                  copy=copy_X)
-            X, y = self._validate_data(X, y,
-                                       validate_separately=(check_X_params,
-                                                            check_y_params))
-            copy_X = False
+        X, y = check_X_y(X, y, copy=self.copy_X, multi_output=True)
 
         if y.shape[0] == 0:
             raise ValueError("y has 0 samples: %r" % y)
@@ -201,6 +178,8 @@ class InnateLearn(BaseEstimator):
         np.random.seed(seed=self.random_state)
         self.scale = self.g/np.sqrt(self.p_connect*self.num_units)
 
+        X = check_array(X, copy=self.copy_X)
+
         self.num_inputs = X.shape[1]
         n_steps = X.shape[0]
 
@@ -248,5 +227,7 @@ class InnateLearn(BaseEstimator):
     
     def score(self, X, y, sample_weight=None):
         from sklearn.metrics import mean_squared_error
+
+        X, y = check_X_y(X, y, copy=self.copy_X, multi_output=True)
         y_pred = self.predict(X)
         return mean_squared_error(y, y_pred, sample_weight=sample_weight)

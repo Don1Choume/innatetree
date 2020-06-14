@@ -84,8 +84,8 @@ class InnateLearn(BaseEstimator):
             # one P matrix for each plastic unit in the network
             # RLS: P matrix initialization
             # list of all units presynaptic to plastic_units
-            self.pre_plastic_units = [np.where(self.WXX[plastic_units[i], :]!=0)
-                                 for i in range(self.num_plastic_units)]
+            self.pre_plastic_units = [self.WXX[plastic_units[i], :].nonzero()
+                                        for i in range(self.num_plastic_units)]
             self.P_recurr = [(1.0/self.delta)*np.eye(len(pre_punit))
                                  for pre_punit in self.pre_plastic_units]
         if train_readout and not (keep_P and hasattr(self, 'P_readout')):

@@ -72,7 +72,7 @@ class InnateLearn(BaseEstimator):
         elif len(train_window) != y.shape[0]:
             raise ValueError("train_window has diffenrent length to y: %r" % train_window)
 
-        n_steps = y.shape[0]
+        n_steps = X.shape[0]
 
         if get_target_innate_X:
             noise_amp = 0
@@ -196,5 +196,51 @@ class InnateLearn(BaseEstimator):
         elif not hasattr(self, 'Target_innate_X'):
             self.Target_innate_X = []
 
+
     def predict(self, X):
-        pass
+        np.random.seed(seed=self.random_state)
+        self.scale = self.g/np.sqrt(self.p_connect*self.num_units)
+
+        self.num_inputs = X.shape[1]
+        n_steps = X.shape[0]
+
+        noise_amp = self.noise_amplitude
+
+        if not hasattr(self, 'WXX'):
+            raise ValueError("fit is necessary before prediction")
+
+        if self.save_history:
+            self.X_history = np.zeros(n_steps, self.num_units)
+            self.Out_history = np.zeros(n_steps, self.num_outputs)
+            # auxiliary variables
+            self.WXOut_len = np.zeros((n_steps, 1))
+            self.WXX_len = np.zeros((n_steps, 1))
+
+        # initial conditions
+        Xv = 2*np.random.rand(self.num_units, 1)-1
+        Xi = np.tanh(Xv)
+        Out = np.zeros((self.num_outputs, 1))
+
+        # integration loop
+        for i in range(n_steps):
+            # if rem(i,round(n_steps/10)) == 0 && (TRAIN_RECURR == 1 || TRAIN_READOUT == 1)
+            #     fprintf('.');
+            # end
+
+            Input = X[i,:].T
+
+            # update units
+            noise = noise_amp*np.random.randn(self.num_units, 1)*np.sqrt(self.dt)
+            Xv_current = np.dot(self.WXX, Xi) + np.dot(WInputX, Input) + noise
+            Xv = Xv + ((-Xv + Xv_current)/self.tau)*self.dt
+            Xi = np.tanh(Xv)
+            Out = np.dot(self.WXOut, Xi)
+
+            if self.save_history:
+                # store output
+                self.X_history[i, :] = Xi.T
+                self.Out_history[i, :] = Out.T
+                self.WXOut_len[i] = np.sqrt(np.sum(np.reshape(self.WXOut**2, (self.num_outputs*self.num_units, 1))))
+                self.WXX_len[i] = np.sqrt(np.sum(np.reshape(self,WXX**2, (self.num_units**2, 1))))
+
+        return self.Out_history

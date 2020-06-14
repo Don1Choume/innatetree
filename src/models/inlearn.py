@@ -229,5 +229,6 @@ class InnateLearn(BaseEstimator):
         from sklearn.metrics import mean_squared_error
 
         X, y = check_X_y(X, y, copy=self.copy_X, multi_output=True)
+        check_is_fitted(self)
         y_pred = self.predict(X)
         return mean_squared_error(y, y_pred, sample_weight=sample_weight)

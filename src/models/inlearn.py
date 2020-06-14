@@ -244,3 +244,9 @@ class InnateLearn(BaseEstimator):
                 self.WXX_len[i] = np.sqrt(np.sum(np.reshape(self,WXX**2, (self.num_units**2, 1))))
 
         return self.Out_history
+
+    
+    def score(self, X, y, sample_weight=None):
+        from sklearn.metrics import mean_squared_error
+        y_pred = self.predict(X)
+        return mean_squared_error(y, y_pred, sample_weight=sample_weight)

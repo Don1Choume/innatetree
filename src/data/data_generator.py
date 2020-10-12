@@ -100,8 +100,8 @@ class TimingGen(BaseGenData):
     def gen_train_window(self):
         start_train = self.start_pulse + self.reset_duration
         end_train = start_train + self.interval + self.end_interval
-        return (np.arange(int(self.tmax/self.dt)) >= int(start_train/self.dt)) &\
-                (np.arange(int(self.tmax/self.dt)) < int(end_train/self.dt))
+        return (np.arange(self.n_steps) >= int(start_train/self.dt)) &\
+                (np.arange(self.n_steps) < int(end_train/self.dt))
 
 
 class HandWritingGen(object):
@@ -155,10 +155,14 @@ class HandWritingGen(object):
         return target_Out
 
     def gen_train_window(self):
-        start_train = self.start_pulse + self.reset_duration
-        end_train = start_train + self.interval + self.end_interval
-        return (np.arange(int(self.tmax/self.dt)) >= int(start_train/self.dt)) &\
-                (np.arange(int(self.tmax/self.dt)) < int(end_train/self.dt))
+        start_train1 = self.start_train
+        end_train1 = self.end_train_1
+        start_train2 = self.start_train + self.n_steps
+        end_train2 = self.end_train_2 + self.n_steps
+        return ((np.arange(2*self.n_steps) >= int(start_train1/self.dt)) &\
+                (np.arange(2*self.n_steps) < int(end_train1/self.dt))) |\
+                ((np.arange(2*self.n_steps) >= int(start_train2/self.dt)) &\
+                (np.arange(2*self.n_steps) < int(end_train2/self.dt)))
 
 
 if __name__=="__main__":

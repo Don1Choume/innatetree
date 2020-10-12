@@ -19,6 +19,7 @@ class BaseGenData(object):
 
 class MatlabGen(BaseGenData):
     def __init__(self, target='timing'):
+        self.target = target
         prj_dir = Path(__file__).resolve().parents[2]
         ref_dir = prj_dir/'references'/'original'
         tim_mat = ref_dir/'DAC_timing_training'/'DAC_timing_recurr800_p0.1_g1.5.mat'
@@ -31,10 +32,18 @@ class MatlabGen(BaseGenData):
         self.tmax = self.mat['tmax']
 
     def gen_input(self):
-        return self.mat['input_pattern']
+        if self.target == 'timing':
+            input_pattern = np.squeeze(self.mat['input_pattern'])
+        else:
+            input_pattern = np.squeeze(np.concatenate(self.mat['input_pattern'], axis=1).T)
+        return input_pattern
 
     def gen_output(self):
-        return self.mat['target_Out']
+        if self.target == 'timing':
+            target_Out = np.squeeze(self.mat['target_Out'])
+        else:
+            target_Out = np.squeeze(np.concatenate(self.mat['target_Out'], axis=1).T)
+        return target_Out
 
     def gen_train_window(self):
         return (np.arange(int(self.tmax/self.dt)) >= int(self.mat['start_train']/self.dt)) &\
@@ -128,11 +137,11 @@ class HandWritingGen(object):
         interval_1_n = np.round(self.interval_1/self.dt).astype(int)
         interval_2_n = np.round(self.interval_2/self.dt).astype(int)
 
-        input_pattern = np.zeros((2, self.num_inputs, self.n_steps))
-        input_pattern[0, 0, start_pulse_n:(start_pulse_n+reset_duration_n)] = \
-            self.input_pulse_value*np.ones((1, reset_duration_n))
-        input_pattern[1, 1, start_pulse_n:(start_pulse_n+reset_duration_n)] = \
-            self.input_pulse_value*np.ones((1, reset_duration_n))
+        input_pattern = np.zeros((2*self.n_steps, self.num_inputs))
+        input_pattern[start_pulse_n:(start_pulse_n+reset_duration_n), 0] = \
+            self.input_pulse_value*np.ones(reset_duration_n)
+        input_pattern[(self.n_steps+start_pulse_n):(self.n_steps+start_pulse_n+reset_duration_n), 1] = \
+            self.input_pulse_value*np.ones(reset_duration_n)
         return input_pattern
 
     def gen_output(self, num_outputs=2):
@@ -140,9 +149,9 @@ class HandWritingGen(object):
         start_train_n = np.round(self.start_train/self.dt).astype(int)
         end_train_1_n = np.round(self.end_train_1/self.dt).astype(int)
         end_train_2_n = np.round(self.end_train_2/self.dt).astype(int)
-        target_Out = np.zeros((2, self.num_outputs, self.n_steps))
-        target_Out[0, :, start_train_n:end_train_1_n] = self.mat['chaos']
-        target_Out[1, :, start_train_n:end_train_2_n] = self.mat['neuron']
+        target_Out = np.zeros((2*self.n_steps, self.num_outputs))
+        target_Out[start_train_n:end_train_1_n, :] = self.mat['chaos'].T
+        target_Out[(self.n_steps+start_train_n):(self.n_steps+end_train_2_n), :] = self.mat['neuron'].T
         return target_Out
 
     def gen_train_window(self):

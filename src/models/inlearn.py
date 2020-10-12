@@ -169,7 +169,7 @@ class InnateLearn(BaseEstimator):
                 self._Out_history[i, :] = Out.T
                 self._WXOut_len[i] = np.sqrt(np.sum(np.reshape(self._WXOut**2, (self._num_outputs*self.num_units, 1))))
                 self._WXX_len[i] = np.sqrt(np.sum(np.reshape(self._WXX**2, (self.num_units**2, 1))))
-            
+
             if self.verbose:
                 bar.update(1)
 
@@ -178,7 +178,7 @@ class InnateLearn(BaseEstimator):
             self._Target_innate_X = self._X_history
         elif not hasattr(self, '_Target_innate_X'):
             self._Target_innate_X = []
-        
+
         return self
 
 
@@ -187,7 +187,7 @@ class InnateLearn(BaseEstimator):
         self._scale = self.g/np.sqrt(self.p_connect*self.num_units)
 
         X = check_array(X, copy=self.copy_X)
-        check_is_fitted(self)
+        check_is_fitted(self, '_WXX')
 
         self._num_inputs = X.shape[1]
         n_steps = X.shape[0]
@@ -238,7 +238,7 @@ class InnateLearn(BaseEstimator):
 
         return Out_history
 
-    
+
     def score(self, X, y, sample_weight=None):
         from sklearn.metrics import mean_squared_error
 

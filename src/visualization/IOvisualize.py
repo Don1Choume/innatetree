@@ -21,7 +21,7 @@ def visualize_IO(inputs, outputs, dt=1, savename=None):
     # ax1.grid()
     # ax1.legend()
     if savename is not None:
-       plt.savefig(savename)
+        plt.savefig(savename)
     else:
         plt.show()
     plt.clf()

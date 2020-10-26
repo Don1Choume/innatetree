@@ -1,2 +1,3 @@
-from data import MatlabGen, TimingGen, HandWritingGen
-from models import InnateLearn, BaseTrain, OriginalExperiment, AttractorTree
+from data import MatlabGen, TimingGen, HandWritingGen, DiscreteLorenz
+from models import InnateLearn, OriginalExperiment, AttractorTree
+from visualization import plot_Lorenz
